@@ -1,0 +1,12 @@
+{% extends "admin_page/index.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Crear Nuevo Usuario</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-submit">Crear Usuario</button>
+    </form>
+</div>
+{% endblock %}

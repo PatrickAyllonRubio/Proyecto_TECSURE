@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from .models import Administrador, User, Puerta, Horario, RegistroUsuario, Accion
 from .decorators import include_admin_data
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse
 from datetime import datetime
 from reportlab.pdfgen import canvas
 from rest_framework.views import APIView
@@ -14,7 +14,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.hashers import make_password
 from .models import User, Puerta
 from .serializers import UserSerializer, PuertaSerializer
-from .forms import AccionForm
+from .forms import AccionForm, UserForm, PuertaForm
 
 class UserView(APIView):
 
@@ -265,6 +265,16 @@ def editar_usuario(request):
     else:
         return HttpResponse(status=405)
     
+def crear_usuario(request):
+    if request.method == 'POST':
+        form = UserForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_page:index')
+    else:
+        form = UserForm()
+    return render(request, 'admin_page/crear_usuario.html', {'form': form})
+    
 @include_admin_data
 def eliminar_usuario(request):
     if request.method == 'GET':
@@ -337,7 +347,17 @@ def eliminar_puerta(request):
         puerta = Puerta.objects.get(id=puerta_id)
         puerta.delete()
         return redirect('admin_page:puertas')
-    
+
+def crear_puerta(request):
+    if request.method == 'POST':
+        form = PuertaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_page:index')
+    else:
+        form = PuertaForm()
+    return render(request, 'admin_page/crear_puerta.html', {'form': form})
+
 @include_admin_data
 def horarios(request):
     admin_id = request.session.get('admin_id')
