@@ -1,0 +1,32 @@
+<!-- editar_puerta.html -->
+{% extends "admin_page/index.html" %}
+
+{% block title %} Editar Puerta {% endblock %}
+
+{% block content %}
+<div class="title-cards">
+    <h1>Editar Puerta</h1>
+</div>
+
+<form id="editarPuertaForm" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="puerta_id" value="{{ puerta.id }}">
+    <div class="form-group">
+        <label for="codigo">Código:</label>
+        <input type="text" class="form-control" id="codigo" name="codigo" value="{{ puerta.codigo }}" required>
+    </div>
+    <div class="form-group">
+        <label for="ubicacion">Ubicación:</label>
+        <input type="text" class="form-control" id="ubicacion" name="ubicacion" value="{{ puerta.ubicacion }}" required>
+    </div>
+    <div class="form-group">
+        <label for="estado_actual">Estado actual:</label>
+        <input type="text" class="form-control" id="estado_actual" name="estado_actual" value="{{ puerta.estado_actual }}" required>
+    </div>
+    <div class="form-group">
+        <label for="foto">Foto:</label>
+        <input type="file" class="form-control-file" id="foto" name="foto">
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+</form>
+{% endblock %}

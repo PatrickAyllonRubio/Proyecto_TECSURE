@@ -1,0 +1,53 @@
+<!-- editar_usuario.html -->
+{% extends "admin_page/index.html" %}
+
+{% block title %} Editar Usuario {% endblock %}
+
+{% block content %}
+<div class="title-cards">
+    <h1>Editar Usuario</h1>
+</div>
+
+<form id="editarUsuarioForm" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="user_id" value="{{ user.id }}">
+    <div class="form-group">
+        <label for="nombre">Nombre:</label>
+        <input type="text" class="form-control" id="nombre" name="nombre" value="{{ user.nombre }}" required>
+    </div>
+    <div class="form-group">
+        <label for="apellido">Apellido:</label>
+        <input type="text" class="form-control" id="apellido" name="apellido" value="{{ user.apellido }}" required>
+    </div>
+    <div class="form-group">
+        <label for="correo">Correo:</label>
+        <input type="email" class="form-control" id="correo" name="correo" value="{{ user.correo }}" required>
+    </div>
+    <div class="form-group">
+        <label for="telefono">Teléfono:</label>
+        <input type="text" class="form-control" id="telefono" name="telefono" value="{{ user.telefono }}" required>
+    </div>
+    <div class="form-group">
+        <label for="dni">DNI:</label>
+        <input type="text" class="form-control" id="dni" name="dni" value="{{ user.dni }}" required>
+    </div>
+    <div class="form-group">
+        <label for="foto">Foto:</label>
+        <input type="file" class="form-control-file" id="foto" name="foto">
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+</form>
+
+{% if messages %}
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: '{{ messages|join:" " }}',
+        showConfirmButton: false,
+        timer: 1500
+    });
+</script>
+{% endif %}
+
+{% endblock %}

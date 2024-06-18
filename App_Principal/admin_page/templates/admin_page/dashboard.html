@@ -1,0 +1,122 @@
+{% extends "admin_page/index.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Bienvenido, {{ administrador.nombre }} {{ administrador.apellido }}</h1>
+    <div class="stats">
+        <div class="stat">
+            <h3>Profesores</h3>
+            <p>42</p>
+        </div>
+        <div class="stat">
+            <h3>Alumnos</h3>
+            <p>1217</p>
+        </div>
+        <div class="stat">
+            <h3>Puertas</h3>
+            <p>68</p>
+        </div>
+        <div class="stat">
+            <h3>Acciones</h3>
+            <p>{{ total_registros }}</p>
+        </div>
+    </div>
+    <div class="cards-container">
+        <div class="card-container">
+            <div class="card">
+                <canvas id="accionesChart"></canvas>
+            </div>
+        </div>
+        <div class="card-container">
+            <div class="card">
+                <canvas id="usuariosChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <a href="{% url 'admin_page:agregar_accion' %}" class="btn-actions">Agregar Acción</a>
+    <form id="reporteForm" method="get" action="{% url 'admin_page:generar_reporte_usuarios_pdf' 0 %}">
+        <label for="usuario_id">Selecciona un usuario:</label>
+        <select name="usuario_id" id="usuario_id" onchange="updateFormAction()">
+            {% for usuario in usuarios %}
+                <option value="{{ usuario.id }}">{{ usuario.nombre }} {{ usuario.apellido }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Generar Reporte PDF</button>
+    </form>
+</div>
+
+<script>
+
+    function updateFormAction() {
+        var select = document.getElementById('usuario_id');
+        var form = document.getElementById('reporteForm');
+        var selectedUserId = select.value;
+        form.action = "{% url 'admin_page:generar_reporte_usuarios_pdf' 0 %}".replace('0', selectedUserId);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Datos de ejemplo
+        const accionesData = {
+            labels: ['Acción 1', 'Acción 2', 'Acción 3', 'Acción 4', 'Acción 5'],
+            datasets: [{
+                label: 'Cantidad de Acciones',
+                data: [12, 19, 3, 5, 2],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+    
+        const usuariosData = {
+            labels: ['Usuarios'],
+            datasets: [{
+                data: [100],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                ],
+                borderWidth: 1
+            }]
+        };
+    
+        // Crear gráfico de barras para acciones
+        const ctxAcciones = document.getElementById('accionesChart').getContext('2d');
+        const accionesChart = new Chart(ctxAcciones, {
+            type: 'bar',
+            data: accionesData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    
+        // Crear gráfico circular para usuarios
+        const ctxUsuarios = document.getElementById('usuariosChart').getContext('2d');
+        const usuariosChart = new Chart(ctxUsuarios, {
+            type: 'doughnut',
+            data: usuariosData,
+            options: {
+                responsive: true
+            }
+        });
+    });
+    </script>
+{% endblock %}

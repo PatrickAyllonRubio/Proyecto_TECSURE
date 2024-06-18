@@ -1,0 +1,12 @@
+{% extends "admin_page/index.html" %}
+{% block title %} Agregar Acción {% endblock %}
+{% block content %}
+<div class="title-cards">
+   <h1>AGREGAR ACCIÓN</h1>
+</div>
+<form method="post">
+   {% csrf_token %}
+   {{ form.as_p }}
+   <button type="submit">Guardar Acción</button>
+</form>
+{% endblock %}

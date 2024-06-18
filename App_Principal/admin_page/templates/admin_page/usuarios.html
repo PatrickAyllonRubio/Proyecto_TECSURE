@@ -1,0 +1,141 @@
+{% extends "admin_page/index.html" %}
+
+{% block title %} Plantilla USUARIOS {% endblock %}
+
+{% block content %}
+<div class="title-cards">
+    <h1>LISTA DE USUARIOS</h1>
+</div>
+
+<!-- Barra de búsqueda mejorada -->
+<div class="barra_busqueda">
+    <form id="search-form" method="GET" action="{% url 'admin_page:usuarios' %}">
+        <input class="barra" type="text" id="search-input" name="q" placeholder="Buscar usuario por DNI...">
+        <button class="enviar" type="submit">Buscar</button>
+        <button class="cancelar" type="button" onclick="window.location.href='{% url 'admin_page:usuarios' %}'">Cancelar</button>
+    </form>
+</div>
+
+<!-- Contenedor para mostrar los resultados de la búsqueda -->
+<div class="cards-container" id="cards-container">
+    {% for user in usuarios %}
+    <div class="card-container">
+        <div class="card">
+            <figure>
+                <img src="{{ user.foto.url }}" alt="Imagen del usuario">
+            </figure>
+            <div class="contenido-card">
+                <h3>{{ user.nombre }} {{ user.apellido }}</h3>
+                <p>Correo: {{ user.correo }}</p>
+                <p>Telefono: {{ user.telefono }}</p>
+                <p>DNI: {{ user.dni }}</p>
+                <div class="buttons">
+                    <a href="{% url 'admin_page:editar_usuario' %}?id={{ user.id }}" class="btn-edit">Editar <ion-icon name="create-outline"></ion-icon></a>
+                    <a href="#" class="btn-delete" onclick="confirmDelete('{{ user.id }}')">Eliminar <ion-icon name="trash-outline"></ion-icon></a>
+                    <a href="{% url 'admin_page:acciones_usuario' user.id %}" class="btn-actions">Acciones <ion-icon name="library-outline"></ion-icon></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const cardsContainer = document.getElementById('cards-container');
+
+    searchInput.addEventListener('input', function() {
+        const query = searchInput.value.trim().toLowerCase();
+
+        fetch(`/index/usuarios/?q=${query}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            cardsContainer.innerHTML = '';
+
+            data.forEach(user => {
+                const cardContainer = document.createElement('div');
+                cardContainer.classList.add('card-container');
+
+                const card = document.createElement('div');
+                card.classList.add('card');
+
+                const figure = document.createElement('figure');
+                const img = document.createElement('img');
+                img.src = user.foto ? user.foto : '';
+                img.alt = 'Imagen del usuario';
+                figure.appendChild(img);
+
+                const contenidoCard = document.createElement('div');
+                contenidoCard.classList.add('contenido-card');
+
+                const h3 = document.createElement('h3');
+                h3.textContent = `${user.nombre} ${user.apellido}`;
+                contenidoCard.appendChild(h3);
+
+                const pCorreo = document.createElement('p');
+                pCorreo.textContent = `Correo: ${user.correo}`;
+                contenidoCard.appendChild(pCorreo);
+
+                const pTelefono = document.createElement('p');
+                pTelefono.textContent = `Telefono: ${user.telefono}`;
+                contenidoCard.appendChild(pTelefono);
+
+                const pDni = document.createElement('p');
+                pDni.textContent = `DNI: ${user.dni}`;
+                contenidoCard.appendChild(pDni);
+
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.classList.add('buttons');
+
+                const btnEdit = document.createElement('a');
+                btnEdit.href = `{% url 'admin_page:editar_usuario' %}?id=${user.id}`;
+                btnEdit.classList.add('btn-edit');
+                btnEdit.textContent = 'Editar';
+                buttonsDiv.appendChild(btnEdit);
+
+                const btnDelete = document.createElement('a');
+                btnDelete.href = '#';
+                btnDelete.classList.add('btn-delete');
+                btnDelete.textContent = 'Eliminar';
+                btnDelete.onclick = function() { confirmDelete(user.id); };
+                buttonsDiv.appendChild(btnDelete);
+
+                const btnActions = document.createElement('a');
+                btnActions.href = '#';
+                btnActions.classList.add('btn-actions');
+                btnActions.textContent = 'Acciones';
+                buttonsDiv.appendChild(btnActions);
+
+                contenidoCard.appendChild(buttonsDiv);
+                card.appendChild(figure);
+                card.appendChild(contenidoCard);
+                cardContainer.appendChild(card);
+                cardsContainer.appendChild(cardContainer);
+            });
+        });
+    });
+});
+
+function confirmDelete(userId) {
+    Swal.fire({
+        title: '¿Eliminar usuario?',
+        text: "¿Estás seguro de que quieres eliminar esta usuario?, esto será permanente",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "/index/usuarios/eliminar/?id=" + userId;
+        }
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "admin_page/index.html" %}
+
+{% block title %} Plantilla PUERTAS {% endblock %}
+
+{% block content %}
+<div class="title-cards">
+    <h1>LISTA DE PUERTAS</h1>
+</div>
+
+<!-- Barra de búsqueda mejorada -->
+<div class="barra_busqueda">
+    <form id="search-form" method="GET" action="{% url 'admin_page:puertas' %}">
+        <input class="barra" type="text" id="search-input" name="q" placeholder="Buscar puerta por código...">
+        <button class="enviar" type="submit">Buscar</button>
+        <button class="cancelar" type="button" onclick="window.location.href='{% url 'admin_page:puertas' %}'">Cancelar</button>
+    </form>
+</div>
+
+<!-- Contenedor para mostrar los resultados de la búsqueda -->
+<div class="cards-container" id="cards-container">
+    {% for puerta in puertas %}
+    <div class="card-container">
+        <div class="card">
+            <figure>
+                <img src="{{ puerta.foto.url }}" alt="Imagen de la puerta">
+            </figure>
+            <div class="contenido-card">
+                <h3>{{ puerta.codigo }}</h3>
+                <p>Ubicación: {{ puerta.ubicacion }}</p>
+                <p>Estado: {{ puerta.estado }}</p>
+                <div class="buttons">
+                    <a href="{% url 'admin_page:editar_puerta' %}?id={{ puerta.id }}" class="btn-edit">Editar <ion-icon name="create-outline"></ion-icon></a>
+                    <a href="#" class="btn-delete" onclick="confirmDelete('{{ puerta.id }}')">Eliminar <ion-icon name="trash-outline"></ion-icon></a>
+                    <a href="{% url 'admin_page:acciones_puerta' puerta.id %}" class="btn-actions">Acciones <ion-icon name="library-outline"></ion-icon></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const cardsContainer = document.getElementById('cards-container');
+
+    searchInput.addEventListener('input', function() {
+        const query = searchInput.value.trim().toLowerCase();
+
+        fetch(`/index/puertas/?q=${query}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            cardsContainer.innerHTML = '';
+
+            data.forEach(puerta => {
+                const cardContainer = document.createElement('div');
+                cardContainer.classList.add('card-container');
+
+                const card = document.createElement('div');
+                card.classList.add('card');
+
+                const figure = document.createElement('figure');
+                const img = document.createElement('img');
+                img.src = puerta.foto ? puerta.foto : '';
+                img.alt = 'Imagen de la puerta';
+                figure.appendChild(img);
+
+                const contenidoCard = document.createElement('div');
+                contenidoCard.classList.add('contenido-card');
+
+                const h3 = document.createElement('h3');
+                h3.textContent = puerta.codigo;
+                contenidoCard.appendChild(h3);
+
+                const pUbicacion = document.createElement('p');
+                pUbicacion.textContent = `Ubicación: ${puerta.ubicacion}`;
+                contenidoCard.appendChild(pUbicacion);
+
+                const pEstado = document.createElement('p');
+                pEstado.textContent = `Estado: ${puerta.estado}`;
+                contenidoCard.appendChild(pEstado);
+
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.classList.add('buttons');
+
+                const btnEdit = document.createElement('a');
+                btnEdit.href = `/index/puertas/editar/?id=${puerta.id}`;
+                btnEdit.classList.add('btn-edit');
+                btnEdit.textContent = 'Editar';
+                buttonsDiv.appendChild(btnEdit);
+
+                const btnDelete = document.createElement('a');
+                btnDelete.href = '#';
+                btnDelete.classList.add('btn-delete');
+                btnDelete.textContent = 'Eliminar';
+                btnDelete.onclick = function() { confirmDelete(puerta.id); };
+                buttonsDiv.appendChild(btnDelete);
+
+                const btnActions = document.createElement('a');
+                btnActions.href = '#';
+                btnActions.classList.add('btn-actions');
+                btnActions.textContent = 'Acciones';
+                buttonsDiv.appendChild(btnActions);
+
+                contenidoCard.appendChild(buttonsDiv);
+                card.appendChild(figure);
+                card.appendChild(contenidoCard);
+                cardContainer.appendChild(card);
+                cardsContainer.appendChild(cardContainer);
+            });
+        });
+    });
+
+    document.addEventListener('click', function(event) {
+        const searchResults = document.querySelector('.search-results');
+        if (searchResults && !searchForm.contains(event.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+});
+
+function confirmDelete(puertaId) {
+    Swal.fire({
+        title: '¿Eliminar puerta?',
+        text: "¿Estás seguro de que quieres eliminar esta puerta?, esto será permanente",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = `/index/puertas/eliminar/?id=${puertaId}`;
+        }
+    });
+}
+</script>
+{% endblock %}
