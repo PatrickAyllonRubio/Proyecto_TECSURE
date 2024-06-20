@@ -1,11 +1,26 @@
 {% extends "admin_page/index.html" %}
 
 {% block content %}
-<div class="form-container">
+<div class="form-container accion-form">
     <h2>Crear Nueva Puerta</h2>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="form-group">
+            <label for="{{ form.codigo.id_for_label }}">Código:</label>
+            {{ form.codigo }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.ubicacion.id_for_label }}">Ubicación:</label>
+            {{ form.ubicacion }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.estado_actual.id_for_label }}">Estado Actual:</label>
+            {{ form.estado_actual }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.foto.id_for_label }}">Foto:</label>
+            {{ form.foto }}
+        </div>
         <button type="submit" class="btn-submit">Crear Puerta</button>
     </form>
 </div>

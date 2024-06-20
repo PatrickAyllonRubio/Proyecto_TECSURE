@@ -1,12 +1,27 @@
 {% extends "admin_page/index.html" %}
 {% block title %} Agregar Acción {% endblock %}
 {% block content %}
-<div class="title-cards">
-   <h1>AGREGAR ACCIÓN</h1>
+<div class="form-container accion-form">
+<h2>Crear Nuevo Usuario</h2>
+   <form method="post" class="accion-form">
+      {% csrf_token %}
+      <div class="form-group">
+         <label for="{{ form.usuario.id_for_label }}">Usuario:</label>
+         {{ form.usuario }}
+      </div>
+      <div class="form-group">
+         <label for="{{ form.puerta.id_for_label }}">Puerta:</label>
+         {{ form.puerta }}
+      </div>
+      <div class="form-group">
+         <label for="{{ form.fecha_actividad.id_for_label }}">Fecha de Actividad:</label>
+         {{ form.fecha_actividad }}
+      </div>
+      <div class="form-group">
+         <label for="{{ form.hora_actividad.id_for_label }}">Hora de Actividad:</label>
+         {{ form.hora_actividad }}
+      </div>
+      <button type="submit">Guardar Acción</button>
+   </form>
 </div>
-<form method="post">
-   {% csrf_token %}
-   {{ form.as_p }}
-   <button type="submit">Guardar Acción</button>
-</form>
 {% endblock %}

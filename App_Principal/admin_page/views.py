@@ -3,11 +3,14 @@ from .models import Administrador, User, Puerta, Horario, RegistroUsuario, Accio
 from .decorators import include_admin_data
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.db.models import Count
 from reportlab.pdfgen import canvas
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
 from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
@@ -150,23 +153,66 @@ def index(request):
         return redirect('admin_page:login')
 
 def generar_reporte_usuarios_pdf(request, usuario_id):
+    # Obtener el usuario y sus datos asociados
     usuario = get_object_or_404(User, id=usuario_id)
-    registros = RegistroUsuario.objects.filter(user=usuario)
-
+    acciones = Accion.objects.filter(usuario=usuario)
+    horarios = Horario.objects.filter(user=usuario)
+    
     # Creación del archivo PDF
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="reporte_usuario_{usuario_id}.pdf"'
 
-    # Generación del contenido del PDF
-    p = canvas.Canvas(response)
-    p.drawString(100, 800, f"Reporte de Usuario: {usuario.username}")
+    # Inicializar el lienzo del PDF
+    p = canvas.Canvas(response, pagesize=letter)
+    
+    # Configurar fuentes y estilos
+    p.setFont("Helvetica-Bold", 16)
+    p.setFillColor(colors.black)
 
-    y = 750
-    for registro in registros:
+    # Título del reporte
+    p.drawCentredString(300, 750, "Reporte de Usuario")
+    p.setFont("Helvetica", 12)
+
+    # Datos personales del usuario
+    p.drawString(100, 720, "Datos Personales:")
+    p.drawString(100, 700, f"Nombre: {usuario.nombre} {usuario.apellido}")
+    p.drawString(100, 680, f"Correo electrónico: {usuario.correo}")
+    p.drawString(100, 660, f"Teléfono: {usuario.telefono}")
+    p.drawString(100, 640, f"DNI: {usuario.dni}")
+
+    # Dibujar la foto del usuario si está disponible
+    if usuario.foto:
+        try:
+            foto_path = usuario.foto.path
+            p.drawImage(foto_path, 400, 640, width=100, height=100, mask='auto')
+        except:
+            pass
+
+    # Separador
+    p.line(100, 620, 500, 620)
+
+    # Horarios asignados
+    p.drawString(100, 600, "Horarios Asignados:")
+    y = 580
+    for horario in horarios:
+        p.drawString(100, y, f"Día: {horario.get_dia_semana_display()}")
+        p.drawString(250, y, f"Horario: {horario.hora_inicio.strftime('%H:%M')} - {horario.hora_fin.strftime('%H:%M')}")
+        p.drawString(400, y, f"Puerta: {horario.puerta.codigo}")
         y -= 20
-        p.drawString(100, y, f"Fecha de ingreso: {registro.hora_ingreso}")
-        p.drawString(300, y, f"Fecha de salida: {registro.hora_salida}")
 
+    # Separador
+    p.line(100, y - 10, 500, y - 10)
+
+    # Acciones registradas
+    p.drawString(100, y - 30, "Acciones Registradas:")
+    y -= 50
+    for accion in acciones:
+        p.drawString(100, y, f"Fecha: {accion.fecha_actividad.strftime('%d/%m/%Y')}")
+        p.drawString(250, y, f"Hora: {accion.hora_actividad.strftime('%H:%M')}")
+        p.drawString(400, y, f"Puerta: {accion.puerta.codigo}")
+        y -= 20
+
+    # Guardar el PDF y cerrar el lienzo
     p.showPage()
     p.save()
 
@@ -179,25 +225,35 @@ def dashboard(request):
             administrador = Administrador.objects.get(id=admin_id)
             total_usuarios = User.objects.count()
             total_puertas = Puerta.objects.count()
-            total_registros = RegistroUsuario.objects.count()
+            total_acciones = Accion.objects.count()  # Cambia aquí para contar las acciones
             
             # Obtener la lista de usuarios
             usuarios = User.objects.all()
-
-            # Datos para el gráfico de acciones
-            current_year = datetime.now().year
-            months = [f'{i:02d}' for i in range(1, 13)]
-            actions_data = [
-                RegistroUsuario.objects.filter(hora_ingreso__year=current_year, hora_ingreso__month=month).count()
-                for month in range(1, 13)
-            ]
             
+            # Calcular la cantidad de actividades por día de la semana
+            start_of_week = datetime.now() - timedelta(days=datetime.now().weekday())  # Lunes de esta semana
+            end_of_week = start_of_week + timedelta(days=4)  # Viernes de esta semana
+
+            actions_by_day = Accion.objects.filter(
+                fecha_actividad__range=[start_of_week, end_of_week]
+            ).values('fecha_actividad').annotate(count=Count('id'))
+
+            days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+            actions_data = {day: 0 for day in days_of_week}
+            
+            for action in actions_by_day:
+                day_name = action['fecha_actividad'].strftime('%A')
+                if day_name in actions_data:
+                    actions_data[day_name] = action['count']
+
+            actions_data = [actions_data[day] for day in days_of_week]
+
             context = {
                 'administrador': administrador,
                 'total_usuarios': total_usuarios,
                 'total_puertas': total_puertas,
-                'total_registros': total_registros,
-                'months': months,
+                'total_acciones': total_acciones,  # Añadir total de acciones al contexto
+                'days_of_week': days_of_week,
                 'actions_data': actions_data,
                 'usuarios': usuarios  # Pasar la lista de usuarios al contexto
             }
@@ -394,21 +450,25 @@ def horarios(request):
     doors = Puerta.objects.all()
     return render(request, "admin_page/horarios.html", {'users': users, 'doors': doors, 'administrador': administrador})
 
-def lista_acciones(request, id=None):
-    if id is not None:
-        id = int(id)  # Convertir el id a entero si es necesario
-
-        if isinstance(id, int):
-            # Filtrar acciones por usuario o puerta según el tipo de id
-            acciones = Accion.objects.filter(usuario_id=id)
-        else:
-            # Si id no es un entero, manejar el caso según tu lógica
-            acciones = Accion.objects.all()
+def lista_acciones_usuarios(request, usuario_id=None):
+    if usuario_id:
+        usuario = get_object_or_404(User, id=usuario_id)
+        acciones = Accion.objects.filter(usuario=usuario)
     else:
         acciones = Accion.objects.all()
 
     context = {'acciones': acciones}
-    return render(request, 'admin_page/acciones_lista.html', context)
+    return render(request, 'admin_page/acciones_lista_usuarios.html', context)
+
+def lista_acciones_puertas(request, puerta_id=None):
+    if puerta_id:
+        puerta = get_object_or_404(Puerta, id=puerta_id)
+        acciones = Accion.objects.filter(puerta=puerta)
+    else:
+        acciones = Accion.objects.all()
+
+    context = {'acciones': acciones}
+    return render(request, 'admin_page/acciones_lista_puertas.html', context)
 
 
 def agregar_accion(request):
@@ -416,7 +476,7 @@ def agregar_accion(request):
         form = AccionForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('admin_page:acciones_lista')
+            return redirect('admin_page:index')
     else:
         form = AccionForm()
     

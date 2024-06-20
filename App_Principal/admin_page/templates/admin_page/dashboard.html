@@ -18,7 +18,7 @@
         </div>
         <div class="stat">
             <h3>Acciones</h3>
-            <p>{{ total_registros }}</p>
+            <p>{{ total_acciones }}</p>
         </div>
     </div>
     <div class="charts">
@@ -29,9 +29,11 @@
             <canvas id="usuariosChart"></canvas>
         </div>
     </div>
-    <a href="{% url 'admin_page:agregar_accion' %}" class="btn-actions">Agregar Acción</a>
-    <a href="{% url 'admin_page:crear_usuario' %}" class="btn-actions">Crear Usuario</a>
-    <a href="{% url 'admin_page:crear_puerta' %}" class="btn-actions">Crear Puerta</a>
+    <div class="button-container">
+        <a href="{% url 'admin_page:agregar_accion' %}" class="btn-actionsDB">Agregar Acción</a>
+        <a href="{% url 'admin_page:crear_usuario' %}" class="btn-actionsDB">Crear Usuario</a>
+        <a href="{% url 'admin_page:crear_puerta' %}" class="btn-actionsDB">Crear Puerta</a>
+    </div>
     <form id="reporteForm" method="get" action="{% url 'admin_page:generar_reporte_usuarios_pdf' 0 %}">
         <label for="usuario_id">Selecciona un usuario:</label>
         <select name="usuario_id" id="usuario_id" onchange="updateFormAction()">
@@ -41,6 +43,10 @@
         </select>
         <button type="submit">Generar Reporte PDF</button>
     </form>
+    <div class="additional-buttons">
+        <a href="{% url 'admin_page:usersapi' %}" class="btn-actionsDB">API Usuarios</a>
+        <a href="{% url 'admin_page:puertasapi' %}" class="btn-actionsDB">API Puertas</a>
+    </div>
 </div>
 
 <script>
@@ -52,26 +58,14 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Datos de ejemplo
+        // Datos reales
         const accionesData = {
-            labels: {{ months|safe }},
+            labels: {{ days_of_week|safe }},
             datasets: [{
                 label: 'Cantidad de Acciones',
                 data: {{ actions_data|safe }},
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 206, 86, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(153, 102, 255, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)'
-                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
                 borderWidth: 1
             }]
         };
@@ -97,6 +91,7 @@
             data: accionesData,
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true
@@ -111,7 +106,8 @@
             type: 'doughnut',
             data: usuariosData,
             options: {
-                responsive: true
+                responsive: true,
+                maintainAspectRatio: false
             }
         });
     });

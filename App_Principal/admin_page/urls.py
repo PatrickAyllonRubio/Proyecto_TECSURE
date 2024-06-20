@@ -23,12 +23,10 @@ urlpatterns = [
     path('index/puertas/eliminar/', eliminar_puerta, name='eliminar_puerta'),
     path('index/horarios/', horarios, name='horarios'),
     
-    path('index/acciones/', views.lista_acciones, name='acciones_lista'),
+    path('index/usuarios/<int:usuario_id>/', views.lista_acciones_usuarios, name='acciones_usuario'),
+    path('index/puertas/<int:puerta_id>/', views.lista_acciones_puertas, name='acciones_puerta'),
     path('index/acciones/agregar/', views.agregar_accion, name='agregar_accion'),
-    path('index/usuarios/<int:id>/', views.lista_acciones, name='acciones_usuario'),
-    path('index/puertas/<int:id>/', views.lista_acciones, name='acciones_puerta'),
-    
-    path('usersapi/', views.UserView.as_view(), name='users'),
+    path('usersapi/', views.UserView.as_view(), name='usersapi'),
     path('usersapi/<int:user_id>/', views.UserDetailView.as_view(), name='user_detail'),
     
     path('puertaapi/', views.PuertaView.as_view(), name='puertasapi'),
