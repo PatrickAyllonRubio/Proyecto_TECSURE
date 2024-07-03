@@ -2,6 +2,7 @@ from django.urls import path
 from admin_page.views import *
 from . import views
 
+from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -12,6 +13,9 @@ urlpatterns = [
     path('password_reset/', password_reset, name='password_reset'),
     path('reset_password/<int:admin_id>/', reset_password, name='reset_password'),
     path('index/', dashboard, name='index'),
+    path('index/perfil/', views.perfil_administrador, name='perfil_administrador'),
+    path('index/perfil/update_admin_profile/', update_admin_profile, name='update_admin_profile'),
+    path('index/perfil/update_admin_photo/', update_admin_photo, name='update_admin_photo'),
     path('index/generar-reporte-usuario-pdf/<int:usuario_id>/', views.generar_reporte_usuarios_pdf, name='generar_reporte_usuarios_pdf'),
     path('index/usuarios/crear/', views.crear_usuario, name='crear_usuario'),
     path('index/puertas/crear/', views.crear_puerta, name='crear_puerta'),
@@ -22,6 +26,7 @@ urlpatterns = [
     path('index/puertas/editar/', editar_puerta, name='editar_puerta'),
     path('index/puertas/eliminar/', eliminar_puerta, name='eliminar_puerta'),
     path('index/horarios/', horarios, name='horarios'),
+    path('index/horarios/ver_horarios/<int:user_id>/', views.ver_horarios, name='ver_horarios'),
     
     path('index/usuarios/<int:usuario_id>/', views.lista_acciones_usuarios, name='acciones_usuario'),
     path('index/puertas/<int:puerta_id>/', views.lista_acciones_puertas, name='acciones_puerta'),

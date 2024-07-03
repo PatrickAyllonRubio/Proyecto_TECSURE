@@ -1,8 +1,7 @@
 {% extends "admin_page/index.html" %}
-
+{%block header%} REGISTRAR NUEVO USUARIO {% endblock %}
 {% block content %}
 <div class="form-container accion-form">
-    <h2>Crear Nuevo Usuario</h2>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-group">

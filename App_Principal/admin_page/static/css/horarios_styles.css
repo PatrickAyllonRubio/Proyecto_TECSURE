@@ -1,9 +1,10 @@
-
 :root {
   --primary-color: #f90a39;
   --text-color: #1d1d1d;
   --bg-color: #e2e2f4;
 }
+
+/* Estilos para la sección de título */
 .title-cards {
   width: 100%;
   max-width: 1080px;
@@ -13,6 +14,8 @@
   text-align: center;
   color: #7a7a7a;
 }
+
+/* Estilos para el contenedor principal */
 .container {
   position: relative;
   width: 100%;
@@ -20,6 +23,8 @@
   display: flex;
   align-items: center;
 }
+
+/* Estilos para el calendario */
 .calendar {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
@@ -29,6 +34,7 @@
   border-radius: 10px;
   background-color: var(--bg-color);
 }
+
 .calendar .header {
   display: flex;
   height: 25px;
@@ -38,6 +44,7 @@
   padding-bottom: 20px;
   border-bottom: 2px solid #ccc;
 }
+
 .calendar .header .month {
   display: flex;
   align-items: center;
@@ -45,10 +52,12 @@
   font-weight: 600;
   color: var(--text-color);
 }
+
 .calendar .header .btns {
   display: flex;
   gap: 10px;
 }
+
 .calendar .header .btns .btn {
   width: 50px;
   height: 40px;
@@ -62,15 +71,18 @@
   cursor: pointer;
   transition: all 0.3s;
 }
+
 .calendar .header .btns .btn:hover {
   background-color: #db0933;
   transform: scale(1.05);
 }
+
 .weekdays {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
 }
+
 .weekdays .day {
   width: calc(100% / 7 - 10px);
   text-align: center;
@@ -78,11 +90,13 @@
   font-size: 16px;
   font-weight: 600;
 }
+
 .days {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
+
 .days .day {
   width: calc(100% / 7 - 10px);
   height: 50px;
@@ -96,61 +110,166 @@
   background-color: #fff;
   transition: all 0.3s;
 }
+
 .days .day:not(.next):not(.prev):hover {
   color: #fff;
   background-color: var(--primary-color);
   transform: scale(1.05);
 }
+
 .days .day.today {
   color: #fff;
   background-color: var(--primary-color);
 }
+
 .days .day.next,
 .days .day.prev {
   color: #ccc;
 }
 
-/* Credits */
-
-
+/* Estilos para el formulario y tarjeta de resultados */
 .cardform {
-    width: 100%;
-    height: 460px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-left: 20px;
-  }
-  
-  .form-group {
-    margin-bottom: 20px;
-  }
-  
-  label {
-    color:#000;
-    font-weight: bold;
-  }
-  
-  input[type="text"] {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  button {
-    background-color: var(--primary-color);
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-  }
-  
-  button:hover {
-    background-color: #db0933;
-  }
-  
+  width: 100%;
+  height: 460px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-left: 20px;
+}
+
+.cardform .form-group {
+  margin-bottom: 20px;
+}
+
+.cardform label {
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+.cardform input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.cardform button {
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.cardform button:hover {
+  background-color: #db0933;
+}
+.containerBB {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.containerBB .barra_busquedaH {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.barra_busquedaH form {
+  display: flex;
+  align-items: center;
+}
+
+.barra_busquedaH .barraH {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.barra_busquedaH .enviarH,
+.barra_busquedaH .cancelarH {
+  margin-left: 10px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.barra_busquedaH .enviarH {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.barra_busquedaH .enviar:hover,
+.barra_busquedaH .cancelar:hover {
+  background-color: #db0933;
+}
+.containerLA {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.containerLA .cardform {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.cardform table {
+  width: 100%;
+  max-height: 400px; /* Altura máxima de la tabla */
+  overflow-y: auto; /* Scroll vertical si se excede la altura máxima */
+  border-collapse: collapse;
+}
+
+.cardform th,
+.cardform td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #cccccc;
+}
+
+.cardform th {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+.cardform td {
+  color: var(--text-color);
+}
+
+.cardform img {
+
+  max-width: 50px;
+  max-height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.cardform button {
+  border: 2px solid red;
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.cardform button:hover {
+  background-color: #0dd068;
+}
+

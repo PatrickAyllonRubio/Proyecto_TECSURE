@@ -1,8 +1,8 @@
 {% extends "admin_page/index.html" %}
 
+{% block header %} Bienvenido, {{ administrador.nombre }} {{ administrador.apellido }} {% endblock %}
 {% block content %}
 <div class="dashboard-container">
-    <h1>Bienvenido, {{ administrador.nombre }} {{ administrador.apellido }}</h1>
     <div class="stats">
         <div class="stat">
             <h3>Profesores</h3>
@@ -29,23 +29,27 @@
             <canvas id="usuariosChart"></canvas>
         </div>
     </div>
-    <div class="button-container">
-        <a href="{% url 'admin_page:agregar_accion' %}" class="btn-actionsDB">Agregar Acción</a>
-        <a href="{% url 'admin_page:crear_usuario' %}" class="btn-actionsDB">Crear Usuario</a>
-        <a href="{% url 'admin_page:crear_puerta' %}" class="btn-actionsDB">Crear Puerta</a>
-    </div>
-    <form id="reporteForm" method="get" action="{% url 'admin_page:generar_reporte_usuarios_pdf' 0 %}">
-        <label for="usuario_id">Selecciona un usuario:</label>
-        <select name="usuario_id" id="usuario_id" onchange="updateFormAction()">
-            {% for usuario in usuarios %}
-                <option value="{{ usuario.id }}">{{ usuario.nombre }} {{ usuario.apellido }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Generar Reporte PDF</button>
-    </form>
-    <div class="additional-buttons">
-        <a href="{% url 'admin_page:usersapi' %}" class="btn-actionsDB">API Usuarios</a>
-        <a href="{% url 'admin_page:puertasapi' %}" class="btn-actionsDB">API Puertas</a>
+    <div class="containerDASH">
+        <form id="reporteForm" method="get" action="{% url 'admin_page:generar_reporte_usuarios_pdf' 0 %}">
+            <label for="usuario_id">Selecciona un usuario:</label>
+            <select name="usuario_id" id="usuario_id" onchange="updateFormAction()">
+                {% for usuario in usuarios %}
+                    <option value="{{ usuario.id }}">{{ usuario.nombre }} {{ usuario.apellido }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Generar Reporte PDF</button>
+        </form>
+        <div class="buttons">
+            <div class="button-container">
+                <a href="{% url 'admin_page:agregar_accion' %}" class="btn-actionsDB">Agregar Acción</a>
+                <a href="{% url 'admin_page:crear_usuario' %}" class="btn-actionsDB">Crear Usuario</a>
+                <a href="{% url 'admin_page:crear_puerta' %}" class="btn-actionsDB">Crear Puerta</a>
+            </div>
+            <div class="additional-buttons">
+                <a href="{% url 'admin_page:usersapi' %}" class="btn-actionsDB">API Usuarios</a>
+                <a href="{% url 'admin_page:puertasapi' %}" class="btn-actionsDB">API Puertas</a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -58,9 +62,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Datos reales
         const accionesData = {
-            labels: {{ days_of_week|safe }},
+            labels: {{ months|safe }},
             datasets: [{
                 label: 'Cantidad de Acciones',
                 data: {{ actions_data|safe }},
@@ -84,7 +87,6 @@
             }]
         };
 
-        // Crear gráfico de barras para acciones
         const ctxAcciones = document.getElementById('accionesChart').getContext('2d');
         const accionesChart = new Chart(ctxAcciones, {
             type: 'bar',
@@ -100,7 +102,6 @@
             }
         });
 
-        // Crear gráfico circular para usuarios
         const ctxUsuarios = document.getElementById('usuariosChart').getContext('2d');
         const usuariosChart = new Chart(ctxUsuarios, {
             type: 'doughnut',

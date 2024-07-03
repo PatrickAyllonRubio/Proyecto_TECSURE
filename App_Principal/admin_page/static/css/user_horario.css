@@ -1,0 +1,42 @@
+/* Estilos para la tabla de horarios */
+.containerHU {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.tableHU  {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.tableHU th, .tableHU td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.tableHU th {
+    background-color: #f2f2f2;
+}
+
+.tableHU td {
+    background-color: #fff;
+}
+
+/* Estilos específicos para simular un calendario */
+.tableHU td:first-child {
+    font-weight: bold;
+    background-color: #e6f7ff; /* Color de fondo para los días */
+}
+
+.tableHU  td:first-child, .table th:first-child {
+    min-width: 100px;
+}
+
+/* Estilo para filas alternas */
+.table-stripedHU  tbody tr:nth-child(even) td {
+    background-color: #f9f9f9;
+}
+
+/* Estilos adicionales según necesidades específicas */

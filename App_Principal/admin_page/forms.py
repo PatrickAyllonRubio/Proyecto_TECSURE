@@ -19,3 +19,4 @@ class PuertaForm(forms.ModelForm):
     class Meta:
         model = Puerta
         fields = ['codigo', 'ubicacion', 'estado_actual', 'foto']
+

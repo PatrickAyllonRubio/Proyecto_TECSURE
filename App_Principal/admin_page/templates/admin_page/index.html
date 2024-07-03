@@ -7,10 +7,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}{% endblock %}</title>
     <link type="text/css" rel="stylesheet" href="{% static "css/style.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/user_horario.css' %}">
     <link rel="stylesheet" href="{% static "css/listas_styles.css" %}">
     <link rel="stylesheet" href="{% static "css/horarios_styles.css" %}">
     <link rel="stylesheet" href="{% static "css/form_edit.css" %}">
     <link rel="stylesheet" href="{% static "css/form_add.css" %}">
+    <link rel="stylesheet" href="{% static "css/perfil_admin.css" %}">
     <link type="text/css" rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
 </head>
@@ -53,9 +55,9 @@
                     </a>
                 </li>
                 <li>
-                    <a href="">
+                    <a href="#">
                         <ion-icon name="finger-print-outline"></ion-icon>
-                        <span>?????</span>
+                        <span>GESTOR DE HUELLAS</span>
                     </a>
                 </li>
             </ul>
@@ -82,16 +84,42 @@
                     <img src="{% static 'default_user_image.jpg' %}" alt="Foto por defecto">
                 {% endif %}
                 <div class="info-usuario">
-                    <div class="nombre-email">
-                        <span class="nombre">{{ administrador.nombre }}</span>
-                        <span class="email">{{ administrador.correo }}</span>
-                    </div>
-                    <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+                    <a href="{% url 'admin_page:perfil_administrador' %}">
+                        <div class="nombre-email">
+                            <span class="nombre">{{ administrador.nombre }}</span>
+                            <span class="email">{{ administrador.correo }}</span>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
     <main>
+        <div class="headerALL">
+            <h1>{% block header %}{% endblock header %}</h1>
+            <div class="wrap">
+                <div class="widget">
+                    <div class="fecha">
+                        <p id="diaSemana" class="diaSemana"></p>
+                        <p id="dia" class="dia"></p>
+                        <p>de</p>
+                        <p id="mes" class="mes"></p>
+                        <p>del</p>
+                        <p id="year" class="year"></p>
+                    </div>
+                    <div class="reloj">
+                        <p id="horas" class="horas"></p>
+                        <p>:</p>
+                        <p id="minutos" class="minutos"></p>
+                        <p>:</p>
+                        <div class="caja-segundos">
+                            <p id="segundos" class="segundos"></p>
+                            <p id="ampm" class="ampm"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% block content %}
     
         {% endblock %}
@@ -102,5 +130,62 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript" src="{% static "js/script.js" %}"></script>
     <script type="text/javascript" src="{% static "js/horarios_scripts.js" %}"></script>
+    <script type="text/javascript" src="{% static 'js/edit_profile.js' %}"></script>
+    <Script>
+        (function(){
+            var actualizarHora = function(){
+                var fecha = new Date(),
+                    horas = fecha.getHours(),
+                    ampm,
+                    minutos = fecha.getMinutes(),
+                    segundos = fecha.getSeconds(),
+                    diaSemana = fecha.getDay(),
+                    dia = fecha.getDate(),
+                    mes = fecha.getMonth(),
+                    year = fecha.getFullYear();
+        
+                var pHoras = document.getElementById('horas'),
+                    pAMPM = document.getElementById('ampm'),
+                    pMinutos = document.getElementById('minutos'),
+                    pSegundos = document.getElementById('segundos'),
+                    pDiaSemana = document.getElementById('diaSemana'),
+                    pDia = document.getElementById('dia'),
+                    pMes = document.getElementById('mes'),
+                    pYear = document.getElementById('year');
+        
+                var semana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                pDiaSemana.textContent = semana[diaSemana];
+        
+                pDia.textContent = dia;
+        
+                var meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                pMes.textContent = meses[mes];
+        
+                pYear.textContent = year;
+        
+                if (horas >= 12){
+                    horas = horas - 12;
+                    ampm = 'PM';
+                }else{
+                    ampm = 'AM';
+                }
+        
+                if (horas == 0){
+                    horas = 12;
+                }
+        
+                pHoras.textContent = horas;
+                pAMPM.textContent = ampm;
+        
+                if (minutos < 10){ minutos = "0" + minutos;}
+                if (segundos < 10){ segundos = "0" + segundos;}
+        
+                pMinutos.textContent = minutos;
+                pSegundos.textContent = segundos;
+            };
+            actualizarHora();
+            var intervalo = setInterval(actualizarHora, 1000);
+        })();
+    </Script>
 </body>
 </html>

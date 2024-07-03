@@ -1,12 +1,9 @@
 {% extends "admin_page/index.html" %}
 
 {% block title %} Plantilla HORARIOS {% endblock %}
+{%block header%} LISTA DE HORARIOS REGISTRADOS {% endblock %}
 
 {% block content %}
-
-<div class="title-cards">
-    <h1>LISTA DE HORARIOS</h1>
-</div>
 <div class="container">
     <div class="calendar">
         <div class="header">
@@ -87,6 +84,44 @@
         {% else %}
             <p>No se encontraron resultados.</p>
         {% endif %}
+    </div>
+</div>
+<div class="containerLA">
+    <div class="cardform" style="order: 2;">
+        <table class="table" id="user-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th>DNI</th>
+                    <th>Foto</th>
+                    <th>Horarios</th> 
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in users %}
+                <tr>
+                    <td>{{ usuario.nombre }}</td>
+                    <td>{{ usuario.apellido }}</td>
+                    <td>{{ usuario.correo }}</td>
+                    <td>{{ usuario.telefono }}</td>
+                    <td>{{ usuario.dni }}</td>
+                    <td>
+                        {% if usuario.foto %}
+                            <img src="{{ usuario.foto.url }}" width="50" height="50">
+                        {% else %}
+                            No disponible
+                        {% endif %} 
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_page:ver_horarios' usuario.id %}" class="ver-horarios-link">Ver Horarios</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

@@ -1,20 +1,24 @@
 {% extends "admin_page/index.html" %}
 {% block title %} Lista de Acciones de Puertas {% endblock %}
+{% block header %}
+   {% if acciones %}
+       {% with primer_accion=acciones.first %}
+           ACCIONES REGISTRADAS DE LA PUERTA: <br> {{ primer_accion.puerta.codigo }} - {{ primer_accion.puerta.ubicacion }}
+       {% endwith %}
+   {% endif %}
+{% endblock %}
 {% block content %}
-<div class="title-cards">
-   <h1>LISTA DE ACCIONES DE PUERTAS</h1>
-</div>
 <div class="cards-container">
    {% for accion in acciones %}
    <div class="card-container">
        <div class="card">
            <div class="contenido-card">
+                <h3>Puerta: {{ accion.puerta.codigo }}</h3>
+                <p>Ubicación: {{ accion.puerta.ubicacion }}</p>
                <h3>{{ accion.usuario.nombre }} {{ accion.usuario.apellido }}</h3>
                <p>DNI: {{ accion.usuario.dni }}</p>
                <p>Fecha: {{ accion.fecha_actividad }}</p>
                <p>Hora: {{ accion.hora_actividad }}</p>
-               <h3>Puerta: {{ accion.puerta.codigo }}</h3>
-               <p>Ubicación: {{ accion.puerta.ubicacion }}</p>
            </div>
        </div>
    </div>

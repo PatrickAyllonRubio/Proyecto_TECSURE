@@ -2,11 +2,8 @@
 {% extends "admin_page/index.html" %}
 
 {% block title %} Editar Usuario {% endblock %}
-
+{%block header%} EDITAR USUARIO: {{ user.nombre }} {{ user.apellido }}{% endblock %}
 {% block content %}
-<div class="title-cards">
-    <h1>Editar Usuario</h1>
-</div>
 
 <form id="editarUsuarioForm" method="POST" enctype="multipart/form-data">
     {% csrf_token %}

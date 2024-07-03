@@ -2,11 +2,8 @@
 {% extends "admin_page/index.html" %}
 
 {% block title %} Editar Puerta {% endblock %}
-
+{%block header%} EDITAR PUERTA {{ puerta.codigo }} {% endblock %}
 {% block content %}
-<div class="title-cards">
-    <h1>Editar Puerta</h1>
-</div>
 
 <form id="editarPuertaForm" method="POST" enctype="multipart/form-data">
     {% csrf_token %}

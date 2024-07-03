@@ -1,5 +1,5 @@
 .dashboard-container {
-    padding: 20px;
+    padding: 10px;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -8,7 +8,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
 .stat {
@@ -89,7 +89,8 @@
 }
 
 #reporteForm {
-    margin-top: 20px;
+    border: 2px solid rgba(0, 0, 0, 0.1) ;
+    box-shadow: 0 10px 1px rgba(0, 0, 0, 0.1);
 }
 
 #reporteForm label {
@@ -141,4 +142,76 @@
     display: flex;
     justify-content: center;
     margin-top: 20px;
+}
+/* reloj */
+
+.wrap{
+    width: 30%;
+    max-width: 900px;
+
+}
+.widget{
+    width: 90%;  
+}
+
+.widget p {
+    display: inline-block;
+    line-height: 1em;
+}
+.fecha{
+    text-align: center;
+    font-size: 1.2em;
+    margin-bottom:  0.3125rem;
+    background: rgba(0, 0, 0, .5);
+    padding: 10px;
+    width: 100%;
+}
+.reloj{
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    font-size: 3em;
+    background:rgba(0, 0, 0, .5);
+}
+
+.reloj .caja-segundos{
+    display: flex;
+}
+
+.reloj .segundos,
+.reloj .ampm {
+    font-size: 3rem;
+    display: block;
+}
+
+.headerALL {
+    border-radius: 8px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    display: flex;
+    margin-bottom: 10px;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.headerALL h1 {
+    margin: 0;
+    font-size: 60px;
+    padding-left: 30px;
+    font-weight: 300;
+}
+
+.containerDASH {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

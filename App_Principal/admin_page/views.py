@@ -1,23 +1,29 @@
-from django.shortcuts import render, redirect
-from .models import Administrador, User, Puerta, Horario, RegistroUsuario, Accion
-from .decorators import include_admin_data
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
-from datetime import datetime, timedelta
-from django.db.models import Count
+from datetime import datetime
+import calendar
+import locale
+import json
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Count, Q
+from django.contrib.auth.hashers import check_password, make_password
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models.functions import TruncMonth
 from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from django.http import JsonResponse
-from django.contrib import messages
-from django.contrib.auth.hashers import check_password
-from django.contrib.auth.hashers import make_password
-from .models import User, Puerta
+
+from .decorators import include_admin_data
+from .models import Administrador, User, Puerta, Horario, Accion
 from .serializers import UserSerializer, PuertaSerializer
 from .forms import AccionForm, UserForm, PuertaForm
+
 
 class UserView(APIView):
 
@@ -137,6 +143,7 @@ def reset_password(request, admin_id):
     
     return render(request, 'admin_page/reset_password.html', {'admin_id': admin_id})
 
+
 @include_admin_data
 def index(request):
     admin_id = request.session.get('admin_id')
@@ -180,7 +187,6 @@ def generar_reporte_usuarios_pdf(request, usuario_id):
     p.drawString(100, 660, f"Teléfono: {usuario.telefono}")
     p.drawString(100, 640, f"DNI: {usuario.dni}")
 
-    # Dibujar la foto del usuario si está disponible
     if usuario.foto:
         try:
             foto_path = usuario.foto.path
@@ -188,10 +194,8 @@ def generar_reporte_usuarios_pdf(request, usuario_id):
         except:
             pass
 
-    # Separador
     p.line(100, 620, 500, 620)
 
-    # Horarios asignados
     p.drawString(100, 600, "Horarios Asignados:")
     y = 580
     for horario in horarios:
@@ -200,10 +204,8 @@ def generar_reporte_usuarios_pdf(request, usuario_id):
         p.drawString(400, y, f"Puerta: {horario.puerta.codigo}")
         y -= 20
 
-    # Separador
     p.line(100, y - 10, 500, y - 10)
 
-    # Acciones registradas
     p.drawString(100, y - 30, "Acciones Registradas:")
     y -= 50
     for accion in acciones:
@@ -212,11 +214,11 @@ def generar_reporte_usuarios_pdf(request, usuario_id):
         p.drawString(400, y, f"Puerta: {accion.puerta.codigo}")
         y -= 20
 
-    # Guardar el PDF y cerrar el lienzo
     p.showPage()
     p.save()
 
     return response
+
 
 def dashboard(request):
     admin_id = request.session.get('admin_id')
@@ -225,43 +227,39 @@ def dashboard(request):
             administrador = Administrador.objects.get(id=admin_id)
             total_usuarios = User.objects.count()
             total_puertas = Puerta.objects.count()
-            total_acciones = Accion.objects.count()  # Cambia aquí para contar las acciones
-            
-            # Obtener la lista de usuarios
+            total_acciones = Accion.objects.count()
+
             usuarios = User.objects.all()
-            
-            # Calcular la cantidad de actividades por día de la semana
-            start_of_week = datetime.now() - timedelta(days=datetime.now().weekday())  # Lunes de esta semana
-            end_of_week = start_of_week + timedelta(days=4)  # Viernes de esta semana
 
-            actions_by_day = Accion.objects.filter(
-                fecha_actividad__range=[start_of_week, end_of_week]
-            ).values('fecha_actividad').annotate(count=Count('id'))
+            locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')    
 
-            days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-            actions_data = {day: 0 for day in days_of_week}
-            
-            for action in actions_by_day:
-                day_name = action['fecha_actividad'].strftime('%A')
-                if day_name in actions_data:
-                    actions_data[day_name] = action['count']
+            actions_by_month = Accion.objects.annotate(month=TruncMonth('fecha_actividad')).values('month').annotate(count=Count('id')).order_by('month')
 
-            actions_data = [actions_data[day] for day in days_of_week]
+            current_year = datetime.now().year
+            months = [calendar.month_name[i] for i in range(1, 13)]
+            actions_data_dict = {month: 0 for month in months}
+
+            for action in actions_by_month:
+                month_name = action['month'].strftime('%B')
+                actions_data_dict[month_name] = action['count']
+
+            actions_data = list(actions_data_dict.values())
 
             context = {
                 'administrador': administrador,
                 'total_usuarios': total_usuarios,
                 'total_puertas': total_puertas,
-                'total_acciones': total_acciones,  # Añadir total de acciones al contexto
-                'days_of_week': days_of_week,
+                'total_acciones': total_acciones,
+                'months': months,
                 'actions_data': actions_data,
-                'usuarios': usuarios  # Pasar la lista de usuarios al contexto
+                'usuarios': usuarios
             }
             return render(request, 'admin_page/dashboard.html', context)
         except Administrador.DoesNotExist:
             return redirect('admin_page:login')
     else:
         return redirect('admin_page:login')
+
 
 @include_admin_data
 def lista_usuarios(request):
@@ -294,18 +292,18 @@ def lista_usuarios(request):
     
     return render(request, 'admin_page/usuarios.html', {'usuarios': usuarios, 'administrador': administrador})
 
+
 @include_admin_data
 def editar_usuario(request):
     admin_id = request.session.get('admin_id')
     if admin_id:
         administrador = Administrador.objects.get(id=admin_id)
     else:
-        # Si no hay sesión de administrador, redirige a la página de inicio de sesión
         return redirect('admin_page:login')
     if request.method == 'GET':
         user_id = request.GET.get('id')
         user = User.objects.get(id=user_id)
-        return render(request, 'admin_page/editar_usuario.html', {'user': user})
+        return render(request, 'admin_page/editar_usuario.html', {'user': user, 'administrador': administrador})
     elif request.method == 'POST':
         user_id = request.POST.get('user_id')
         user = User.objects.get(id=user_id)
@@ -320,8 +318,14 @@ def editar_usuario(request):
         return redirect('admin_page:usuarios')
     else:
         return HttpResponse(status=405)
+
     
 def crear_usuario(request):
+    admin_id = request.session.get('admin_id')
+    if admin_id:
+        administrador = Administrador.objects.get(id=admin_id)
+    else:
+        return redirect('admin_page:login')
     if request.method == 'POST':
         form = UserForm(request.POST, request.FILES)
         if form.is_valid():
@@ -329,7 +333,8 @@ def crear_usuario(request):
             return redirect('admin_page:index')
     else:
         form = UserForm()
-    return render(request, 'admin_page/crear_usuario.html', {'form': form})
+    return render(request, 'admin_page/crear_usuario.html', {'form': form , 'administrador': administrador})
+
     
 @include_admin_data
 def eliminar_usuario(request):
@@ -339,13 +344,13 @@ def eliminar_usuario(request):
         user.delete()
         return redirect('admin_page:usuarios')
 
+
 @include_admin_data
 def lista_puertas(request):
     admin_id = request.session.get('admin_id')
     if admin_id:
         administrador = Administrador.objects.get(id=admin_id)
     else:
-        # Si no hay sesión de administrador, redirige a la página de inicio de sesión
         return redirect('admin_page:login')
     
     query = request.GET.get('q')
@@ -377,12 +382,11 @@ def editar_puerta(request):
     if admin_id:
         administrador = Administrador.objects.get(id=admin_id)
     else:
-        # Si no hay sesión de administrador, redirige a la página de inicio de sesión
         return redirect('admin_page:login')
     if request.method == 'GET':
         puerta_id = request.GET.get('id')
         puerta = Puerta.objects.get(id=puerta_id)
-        return render(request, 'admin_page/editar_puerta.html', {'puerta': puerta})
+        return render(request, 'admin_page/editar_puerta.html', {'puerta': puerta, 'administrador': administrador})
     elif request.method == 'POST':
         puerta_id = request.POST.get('puerta_id')
         puerta = Puerta.objects.get(id=puerta_id)
@@ -395,6 +399,7 @@ def editar_puerta(request):
         return redirect('admin_page:puertas')
     else:
         return HttpResponse(status=405)
+
     
 @include_admin_data
 def eliminar_puerta(request):
@@ -404,7 +409,13 @@ def eliminar_puerta(request):
         puerta.delete()
         return redirect('admin_page:puertas')
 
+@include_admin_data
 def crear_puerta(request):
+    admin_id = request.session.get('admin_id')
+    if admin_id:
+        administrador = Administrador.objects.get(id=admin_id)
+    else:
+        return redirect('admin_page:login')
     if request.method == 'POST':
         form = PuertaForm(request.POST, request.FILES)
         if form.is_valid():
@@ -412,66 +423,103 @@ def crear_puerta(request):
             return redirect('admin_page:index')
     else:
         form = PuertaForm()
-    return render(request, 'admin_page/crear_puerta.html', {'form': form})
+    return render(request, 'admin_page/crear_puerta.html', {'form': form,'administrador': administrador})
 
-@include_admin_data
+
 def horarios(request):
     admin_id = request.session.get('admin_id')
     if admin_id:
         administrador = Administrador.objects.get(id=admin_id)
     else:
-        # Si no hay sesión de administrador, redirige a la página de inicio de sesión
         return redirect('admin_page:login')
-    if request.method == 'POST':
-        user = request.POST.get('user', '').strip()
-        door = request.POST.get('door', '').strip()
-        day = request.POST.get('day', '').strip().lower()
-        time = request.POST.get('time', '').strip()
-
-        if not day:
-            return render(request, "admin_page/horarios.html", {'error': 'El día es obligatorio para la búsqueda.'})
+    
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        search_user = request.GET.get('q', '').strip()
         
-        horarios = Horario.objects.filter(dia_semana__icontains=day)
-
-        if user:
-            horarios = horarios.filter(user__nombre__icontains=user)
+        # Filtra los usuarios por nombre si hay un término de búsqueda
+        if search_user:
+            users = User.objects.filter(Q(nombre__icontains=search_user) | Q(apellido__icontains=search_user))
+        else:
+            users = User.objects.all()
         
-        if door:
-            horarios = horarios.filter(puerta__codigo__icontains=door)
-
-        if time:
-            horarios = horarios.filter(hora_inicio__lte=time, hora_fin__gte=time)
-
-        users = User.objects.all()
-        doors = Puerta.objects.all()
-        return render(request, "admin_page/horarios.html", {'horarios': horarios, 'users': users, 'doors': doors})
-
+        # Obtén los horarios de los usuarios encontrados o todos los usuarios si no hay búsqueda
+        horarios = Horario.objects.filter(user__in=users)  # Ajusta esto según tus modelos y relaciones
+        
+        # Prepara los datos de los usuarios para enviar como JSON
+        usuarios_data = [
+            {
+                'id': usuario.id,
+                'nombre': usuario.nombre,
+                'apellido': usuario.apellido,
+                'correo': usuario.correo,
+                'telefono': usuario.telefono,
+                'dni': usuario.dni,
+                'foto': usuario.foto.url if usuario.foto else ''
+            }
+            for usuario in users
+        ]
+        
+        return JsonResponse(usuarios_data, safe=False)
+    
     users = User.objects.all()
     doors = Puerta.objects.all()
     return render(request, "admin_page/horarios.html", {'users': users, 'doors': doors, 'administrador': administrador})
 
+def ver_horarios(request, user_id):
+    admin_id = request.session.get('admin_id')
+    if admin_id:
+        administrador = Administrador.objects.get(id=admin_id)
+    else:
+        return redirect('admin_page:login')
+    usuario = get_object_or_404(User, id=user_id)
+    horarios = Horario.objects.filter(user=usuario).order_by('dia_semana', 'hora_inicio')
+    
+    context = {
+        'usuario': usuario,
+        'horarios': horarios,
+        'administrador': administrador
+    }
+    return render(request, 'admin_page/ver_horarios.html', context)
+
+@include_admin_data
 def lista_acciones_usuarios(request, usuario_id=None):
+    admin_id = request.session.get('admin_id')
+    if admin_id:
+        administrador = Administrador.objects.get(id=admin_id)
+    else:
+        return redirect('admin_page:login')
     if usuario_id:
         usuario = get_object_or_404(User, id=usuario_id)
         acciones = Accion.objects.filter(usuario=usuario)
     else:
         acciones = Accion.objects.all()
 
-    context = {'acciones': acciones}
+    context = {'acciones': acciones,'administrador': administrador}
     return render(request, 'admin_page/acciones_lista_usuarios.html', context)
 
+@include_admin_data
 def lista_acciones_puertas(request, puerta_id=None):
+    admin_id = request.session.get('admin_id')
+    if admin_id:
+        administrador = Administrador.objects.get(id=admin_id)
+    else:
+        return redirect('admin_page:login')
     if puerta_id:
         puerta = get_object_or_404(Puerta, id=puerta_id)
         acciones = Accion.objects.filter(puerta=puerta)
     else:
         acciones = Accion.objects.all()
 
-    context = {'acciones': acciones}
+    context = {'acciones': acciones,'administrador': administrador}
     return render(request, 'admin_page/acciones_lista_puertas.html', context)
 
-
+@include_admin_data
 def agregar_accion(request):
+    admin_id = request.session.get('admin_id')
+    if admin_id:
+        administrador = Administrador.objects.get(id=admin_id)
+    else:
+        return redirect('admin_page:login')
     if request.method == 'POST':
         form = AccionForm(request.POST)
         if form.is_valid():
@@ -480,5 +528,59 @@ def agregar_accion(request):
     else:
         form = AccionForm()
     
-    context = {'form': form}
+    context = {'form': form, 'administrador': administrador}
     return render(request, 'admin_page/agregar_accion.html', context)
+ 
+
+def perfil_administrador(request):
+    admin_id = request.session.get('admin_id')
+    if not admin_id:
+        return redirect('admin_page:login')  
+    
+    try:
+        administrador = Administrador.objects.get(id=admin_id)
+    except Administrador.DoesNotExist:
+        return redirect('admin_page:login')  
+
+    return render(request, 'admin_page/perfil_admin.html', {'administrador': administrador})
+
+@csrf_exempt
+@login_required
+def update_admin_profile(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            admin_id = request.session.get('admin_id')
+
+            administrador = get_object_or_404(Administrador, id=admin_id)
+
+            # Actualizar los campos del administrador con los datos recibidos
+            administrador.nombre = data.get('nombre', administrador.nombre)
+            administrador.apellido = data.get('apellido', administrador.apellido)
+            administrador.correo = data.get('correo', administrador.correo)
+            administrador.telefono = data.get('telefono', administrador.telefono)
+            administrador.dni = data.get('dni', administrador.dni)
+
+            administrador.save()
+
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method or no data sent'})
+
+@csrf_exempt
+@login_required
+def update_admin_photo(request):
+    if request.method == 'POST' and request.FILES['foto']:
+        try:
+            admin_id = request.session.get('admin_id')
+            administrador = Administrador.objects.get(id=admin_id)
+            administrador.foto.delete(save=False) 
+
+            administrador.foto = request.FILES['foto']
+            administrador.save()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method or no file uploaded'})

@@ -1,12 +1,9 @@
 {% extends "admin_page/index.html" %}
 
 {% block title %} Plantilla PUERTAS {% endblock %}
+{%block header%} LISTA DE PUERTAS REGISTRADAS {% endblock %}
 
 {% block content %}
-<div class="title-cards">
-    <h1>LISTA DE PUERTAS</h1>
-</div>
-
 <!-- Barra de búsqueda mejorada -->
 <div class="barra_busqueda">
     <form id="search-form" method="GET" action="{% url 'admin_page:puertas' %}">
